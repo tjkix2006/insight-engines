@@ -1,6 +1,6 @@
 import * as constants from './constants';
 import { call, put, takeLatest } from 'redux-saga/effects'
-import Api from '../utils/api';
+import Api from '../../utils/api';
 
 // worker Saga: will be fired on GET_TRAFFIC_DATA actions
 function* fetchTrafficData(action) {

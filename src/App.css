@@ -12,3 +12,21 @@
   font-size: calc(10px + 2vmin);
   color: white;
 }
+
+.error {
+  color: red;
+  margin-top: .5rem;
+}
+
+.form-element {
+  padding: 1rem;
+}
+
+.form-input {
+  display: flex;
+  flex: 1;
+}
+
+.form-input input {
+  flex: 1;
+}

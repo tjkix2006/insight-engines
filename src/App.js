@@ -6,9 +6,10 @@ import { BrowserRouter } from 'react-router-dom'
 import './App.css';
 
 import reducers from './modules/reducers';
-import sagas from './modules/sagas';
-import { getTrafficData } from './modules/actions';
+import sagas from './modules/trafficData/sagas';
+import { getTrafficData } from './modules/trafficData/actions';
 
+import Search from './components/Search';
 import TrafficTable from './components/TrafficTable';
 
 // Initialize the saga middleware
@@ -35,6 +36,7 @@ class App extends Component {
             <header className="App-header">
               Insight Engine Challenge
             </header>
+            <Search></Search>
             <TrafficTable></TrafficTable>
           </div>
         </BrowserRouter>
