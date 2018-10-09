@@ -1,27 +1,80 @@
 import React, { Component } from 'react';
+import { bindActionCreators } from 'redux';
 import { connect } from 'react-redux';
+import { push } from 'react-router-redux';
 import ReactTable from "react-table";
+import qs from 'query-string';
 import "react-table/react-table.css";
 
 class TrafficTable extends Component {
+  // Filters results based on the current search query
   filterResults = () => {
     const {
-      direction,
-      query,
+      search,
       traffic,
     } = this.props;
+    // Get the search param from the URL
+    const { q } = qs.parse(search) || '';
     let filterResults = traffic;
     // Validate that the query is a valid IP
-    const isIP = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(query);
+    const isIP = /^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$/.test(q);
     // If there is a query and traffic, filter it
     if (Array.isArray(traffic)
       && isIP) {
       filterResults = filterResults.filter(result =>
-        result.ip === query
+        result.ip === q
       );
     }
-
     return filterResults;
+  }
+
+  updateQueryExpanded = (updatedExpanded) => {
+    // Create a search object with existing params and the updated value
+    let searchObj = Object.assign(
+      {},
+      qs.parse(this.props.search),
+      {
+        expanded: JSON.stringify(updatedExpanded.expanded),
+      },
+    );
+
+    const searchString = qs.stringify(searchObj);
+    this.props.push({
+      search: searchString
+    });
+  }
+  
+  updateQueryPage = (updatedPage) => {
+    console.warn(updatedPage);
+    // Create a search object with existing params and the updated value
+    let searchObj = Object.assign(
+      {},
+      qs.parse(this.props.search),
+      {
+        page: updatedPage.page + 1
+      },
+    );
+
+    const searchString = qs.stringify(searchObj);
+    this.props.push({
+      search: searchString
+    });
+  }
+
+  updateQuerySort = (updatedSort) => {
+    // Create a search object with existing params and the updated value
+    let searchObj = Object.assign(
+      {},
+      qs.parse(this.props.search),
+      {
+        sorted: JSON.stringify(updatedSort.sorted),
+      },
+    );
+
+    const searchString = qs.stringify(searchObj);
+    this.props.push({
+      search: searchString
+    });
   }
 
   render() {
@@ -30,6 +83,7 @@ class TrafficTable extends Component {
       message,
     } = this.props;
     const traffic = this.filterResults();
+    const params = qs.parse(this.props.search);
 
     return (
       <div>
@@ -72,6 +126,12 @@ class TrafficTable extends Component {
                 accessor: d => parseInt(d['bytes']),
               },
             ]}
+            sorted={params.sorted ? JSON.parse(params.sorted) : []}
+            page={params.page >= 1 ? parseInt(params.page) - 1 : 0}
+            expanded={params.expanded ? JSON.parse(params.expanded) : {}}
+            onSortedChange={sorted => this.updateQuerySort({ sorted })}
+            onPageChange={page => this.updateQueryPage({ page })}
+            onExpandedChange={expanded => this.updateQueryExpanded({ expanded })}
             className="-striped -highlight"
             pivotBy={["src", "dest"]}
           />
@@ -82,11 +142,14 @@ class TrafficTable extends Component {
 }
 
 const mapStateToProps = (state) => ({
-  direction: state.search.direction,
   loading: state.trafficData.loading,
   message: state.trafficData.message,
-  query: state.search.query,
+  search: state.routing.location.search,
   traffic: state.trafficData.traffic,
 });
 
-export default connect(mapStateToProps)(TrafficTable);
+const mapDispatchToProps = (dispatch) => bindActionCreators({
+  push,
+}, dispatch);
+
+export default connect(mapStateToProps, mapDispatchToProps)(TrafficTable);
